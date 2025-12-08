@@ -19,4 +19,9 @@ const (
 	DateTime64 = "DateTime64"
 	Date       = "Date"
 	IPv6       = "IPv6"
+
+	Decimal32  = "Decimal32"
+	Decimal64  = "Decimal64"
+	Decimal128 = "Decimal128"
+	Decimal256 = "Decimal256"
 )

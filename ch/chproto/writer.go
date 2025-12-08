@@ -134,6 +134,14 @@ func (w *Writer) Int64(num int64) {
 	w.UInt64(uint64(num))
 }
 
+func (w *Writer) Int128(b [16]byte) {
+	w.Write(b[:])
+}
+
+func (w *Writer) Int256(b [32]byte) {
+	w.Write(b[:])
+}
+
 func (w *Writer) Float32(num float32) {
 	w.UInt32(math.Float32bits(num))
 }

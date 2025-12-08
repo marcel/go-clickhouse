@@ -186,9 +186,15 @@ func ColumnFactory(chType string, typ reflect.Type) NewColumnFunc {
 		if chType := chEnumType(chType); chType != "" {
 			return NewArrayEnumColumn
 		}
+		if isDecimalType(chType) {
+			return NewArrayDecimalColumn
+		}
 	}
 	if isDateTime64Type(chType) {
 		return NewDateTime64Column
+	}
+	if isDecimalType(chType) {
+		return NewDecimalColumn
 	}
 	if chType := chDateTimeType(chType); chType != "" {
 		return ColumnFactory(chType, typ)
@@ -392,6 +398,82 @@ func chSubType(s, prefix string) string {
 		return s[len(prefix) : len(s)-1]
 	}
 	return ""
+}
+
+// isDecimalType checks if the type string represents a Decimal type
+func isDecimalType(s string) bool {
+	return chSubType(s, "Decimal(") != "" ||
+		chSubType(s, "Decimal32(") != "" ||
+		chSubType(s, "Decimal64(") != "" ||
+		chSubType(s, "Decimal128(") != "" ||
+		chSubType(s, "Decimal256(") != ""
+}
+
+// parseDecimalParams extracts size (in bits), precision, and scale from Decimal type string
+// Handles: Decimal(P,S), Decimal32(S), Decimal64(S), Decimal128(S), Decimal256(S)
+func parseDecimalParams(s string) (size, precision, scale int, err error) {
+	// Try explicit decimal types first: Decimal32(S), Decimal64(S), etc.
+	if inner := chSubType(s, "Decimal32("); inner != "" {
+		scale, err = strconv.Atoi(strings.TrimSpace(inner))
+		if err != nil {
+			return 0, 0, 0, fmt.Errorf("invalid Decimal32 scale: %s", inner)
+		}
+		return 32, 9, scale, nil
+	}
+	if inner := chSubType(s, "Decimal64("); inner != "" {
+		scale, err = strconv.Atoi(strings.TrimSpace(inner))
+		if err != nil {
+			return 0, 0, 0, fmt.Errorf("invalid Decimal64 scale: %s", inner)
+		}
+		return 64, 18, scale, nil
+	}
+	if inner := chSubType(s, "Decimal128("); inner != "" {
+		scale, err = strconv.Atoi(strings.TrimSpace(inner))
+		if err != nil {
+			return 0, 0, 0, fmt.Errorf("invalid Decimal128 scale: %s", inner)
+		}
+		return 128, 38, scale, nil
+	}
+	if inner := chSubType(s, "Decimal256("); inner != "" {
+		scale, err = strconv.Atoi(strings.TrimSpace(inner))
+		if err != nil {
+			return 0, 0, 0, fmt.Errorf("invalid Decimal256 scale: %s", inner)
+		}
+		return 256, 76, scale, nil
+	}
+
+	// Handle generic Decimal(P, S) format
+	if inner := chSubType(s, "Decimal("); inner != "" {
+		parts := strings.Split(inner, ",")
+		if len(parts) != 2 {
+			return 0, 0, 0, fmt.Errorf("invalid Decimal format: %s", s)
+		}
+		precision, err = strconv.Atoi(strings.TrimSpace(parts[0]))
+		if err != nil {
+			return 0, 0, 0, fmt.Errorf("invalid Decimal precision: %s", parts[0])
+		}
+		scale, err = strconv.Atoi(strings.TrimSpace(parts[1]))
+		if err != nil {
+			return 0, 0, 0, fmt.Errorf("invalid Decimal scale: %s", parts[1])
+		}
+
+		// Determine size based on precision
+		switch {
+		case precision <= 9:
+			size = 32
+		case precision <= 18:
+			size = 64
+		case precision <= 38:
+			size = 128
+		case precision <= 76:
+			size = 256
+		default:
+			return 0, 0, 0, fmt.Errorf("Decimal precision %d exceeds maximum of 76", precision)
+		}
+		return size, precision, scale, nil
+	}
+
+	return 0, 0, 0, fmt.Errorf("not a Decimal type: %s", s)
 }
 
 func isUUID(typ reflect.Type) bool {

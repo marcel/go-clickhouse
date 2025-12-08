@@ -125,6 +125,18 @@ func (r *Reader) Int64() (int64, error) {
 	return int64(num), err
 }
 
+func (r *Reader) Int128() ([16]byte, error) {
+	var b [16]byte
+	_, err := io.ReadFull(r.rd, b[:])
+	return b, err
+}
+
+func (r *Reader) Int256() ([32]byte, error) {
+	var b [32]byte
+	_, err := io.ReadFull(r.rd, b[:])
+	return b, err
+}
+
 func (r *Reader) Float32() (float32, error) {
 	num, err := r.UInt32()
 	if err != nil {

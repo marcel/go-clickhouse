@@ -288,6 +288,206 @@ func TestDateTime64(t *testing.T) {
 	require.Equal(t, in.Time.UnixNano(), out.Time.UnixNano())
 }
 
+func TestDecimal(t *testing.T) {
+	ctx := context.Background()
+
+	db := chDB()
+	defer db.Close()
+
+	t.Run("Decimal32", func(t *testing.T) {
+		type Model struct {
+			Value float64 `ch:"type:Decimal32(4)"`
+		}
+
+		err := db.ResetModel(ctx, (*Model)(nil))
+		require.NoError(t, err)
+
+		in := &Model{Value: 123.4567}
+		_, err = db.NewInsert().Model(in).Exec(ctx)
+		require.NoError(t, err)
+
+		out := new(Model)
+		err = db.NewSelect().Model(out).Scan(ctx)
+		require.NoError(t, err)
+		require.InDelta(t, in.Value, out.Value, 0.0001)
+	})
+
+	t.Run("Decimal64", func(t *testing.T) {
+		type Model struct {
+			Value float64 `ch:"type:Decimal64(8)"`
+		}
+
+		err := db.ResetModel(ctx, (*Model)(nil))
+		require.NoError(t, err)
+
+		in := &Model{Value: 12345678.12345678}
+		_, err = db.NewInsert().Model(in).Exec(ctx)
+		require.NoError(t, err)
+
+		out := new(Model)
+		err = db.NewSelect().Model(out).Scan(ctx)
+		require.NoError(t, err)
+		require.InDelta(t, in.Value, out.Value, 0.00000001)
+	})
+
+	t.Run("Decimal(18, 4)", func(t *testing.T) {
+		type Model struct {
+			Value float64 `ch:"type:Decimal(18, 4)"`
+		}
+
+		err := db.ResetModel(ctx, (*Model)(nil))
+		require.NoError(t, err)
+
+		in := &Model{Value: 99999999999999.9999}
+		_, err = db.NewInsert().Model(in).Exec(ctx)
+		require.NoError(t, err)
+
+		out := new(Model)
+		err = db.NewSelect().Model(out).Scan(ctx)
+		require.NoError(t, err)
+		require.InDelta(t, in.Value, out.Value, 0.0001)
+	})
+
+	t.Run("Decimal128", func(t *testing.T) {
+		type Model struct {
+			Value float64 `ch:"type:Decimal128(18)"`
+		}
+
+		err := db.ResetModel(ctx, (*Model)(nil))
+		require.NoError(t, err)
+
+		in := &Model{Value: 123456789.123456789012345678}
+		_, err = db.NewInsert().Model(in).Exec(ctx)
+		require.NoError(t, err)
+
+		out := new(Model)
+		err = db.NewSelect().Model(out).Scan(ctx)
+		require.NoError(t, err)
+		// Note: float64 has ~15-17 decimal digits of precision
+		require.InDelta(t, in.Value, out.Value, 0.000000001)
+	})
+
+	t.Run("Decimal256", func(t *testing.T) {
+		type Model struct {
+			Value float64 `ch:"type:Decimal256(38)"`
+		}
+
+		err := db.ResetModel(ctx, (*Model)(nil))
+		require.NoError(t, err)
+
+		in := &Model{Value: 123456789.123456789}
+		_, err = db.NewInsert().Model(in).Exec(ctx)
+		require.NoError(t, err)
+
+		out := new(Model)
+		err = db.NewSelect().Model(out).Scan(ctx)
+		require.NoError(t, err)
+		require.InDelta(t, in.Value, out.Value, 0.000000001)
+	})
+
+	t.Run("NegativeDecimal", func(t *testing.T) {
+		type Model struct {
+			Value float64 `ch:"type:Decimal64(4)"`
+		}
+
+		err := db.ResetModel(ctx, (*Model)(nil))
+		require.NoError(t, err)
+
+		in := &Model{Value: -9999.1234}
+		_, err = db.NewInsert().Model(in).Exec(ctx)
+		require.NoError(t, err)
+
+		out := new(Model)
+		err = db.NewSelect().Model(out).Scan(ctx)
+		require.NoError(t, err)
+		require.InDelta(t, in.Value, out.Value, 0.0001)
+	})
+
+	t.Run("ZeroDecimal", func(t *testing.T) {
+		type Model struct {
+			Value float64 `ch:"type:Decimal64(4)"`
+		}
+
+		err := db.ResetModel(ctx, (*Model)(nil))
+		require.NoError(t, err)
+
+		in := &Model{Value: 0}
+		_, err = db.NewInsert().Model(in).Exec(ctx)
+		require.NoError(t, err)
+
+		out := new(Model)
+		err = db.NewSelect().Model(out).Scan(ctx)
+		require.NoError(t, err)
+		require.Equal(t, float64(0), out.Value)
+	})
+
+	t.Run("NullableDecimal", func(t *testing.T) {
+		type Model struct {
+			Value *float64 `ch:"type:Decimal64(4)"`
+		}
+
+		err := db.ResetModel(ctx, (*Model)(nil))
+		require.NoError(t, err)
+
+		val := 123.4567
+		models := []Model{
+			{Value: &val},
+			{Value: nil},
+		}
+		_, err = db.NewInsert().Model(&models).Exec(ctx)
+		require.NoError(t, err)
+
+		var results []Model
+		err = db.NewSelect().Model(&results).OrderExpr("value ASC NULLS LAST").Scan(ctx)
+		require.NoError(t, err)
+		require.Len(t, results, 2)
+		require.NotNil(t, results[0].Value)
+		require.InDelta(t, val, *results[0].Value, 0.0001)
+		require.Nil(t, results[1].Value)
+	})
+
+	t.Run("ArrayDecimal", func(t *testing.T) {
+		type Model struct {
+			Values []float64 `ch:"type:Array(Decimal64(4))"`
+		}
+
+		err := db.ResetModel(ctx, (*Model)(nil))
+		require.NoError(t, err)
+
+		in := &Model{Values: []float64{1.1111, 2.2222, 3.3333}}
+		_, err = db.NewInsert().Model(in).Exec(ctx)
+		require.NoError(t, err)
+
+		out := new(Model)
+		err = db.NewSelect().Model(out).Scan(ctx)
+		require.NoError(t, err)
+		require.Len(t, out.Values, 3)
+		require.InDelta(t, 1.1111, out.Values[0], 0.0001)
+		require.InDelta(t, 2.2222, out.Values[1], 0.0001)
+		require.InDelta(t, 3.3333, out.Values[2], 0.0001)
+	})
+
+	t.Run("MultipleDecimalFields", func(t *testing.T) {
+		type Model struct {
+			Price float64 `ch:"type:Decimal(18, 4)"`
+			Size  float64 `ch:"type:Decimal(18, 4)"`
+		}
+
+		err := db.ResetModel(ctx, (*Model)(nil))
+		require.NoError(t, err)
+
+		in := &Model{Price: 150.2543, Size: 100.0000}
+		_, err = db.NewInsert().Model(in).Exec(ctx)
+		require.NoError(t, err)
+
+		out := new(Model)
+		err = db.NewSelect().Model(out).Scan(ctx)
+		require.NoError(t, err)
+		require.InDelta(t, in.Price, out.Price, 0.0001)
+		require.InDelta(t, in.Size, out.Size, 0.0001)
+	})
+}
+
 func TestInvalidType(t *testing.T) {
 	t.Skip()
 
