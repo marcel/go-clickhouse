@@ -90,10 +90,13 @@ func (c ColumnOf[T]) Value() any {
 }
 
 func (c ColumnOf[T]) Nullable(nulls UInt8Column) any {
-	nullable := make([]*T, len(c.Column))
-	for i := range c.Column {
+	// Point into a copy: the next block is read into c.Column.
+	values := make([]T, len(c.Column))
+	copy(values, c.Column)
+	nullable := make([]*T, len(values))
+	for i := range values {
 		if nulls.Column[i] == 0 {
-			nullable[i] = &c.Column[i]
+			nullable[i] = &values[i]
 		}
 	}
 	return nullable
