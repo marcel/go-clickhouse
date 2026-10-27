@@ -144,20 +144,46 @@ func (db *DB) autoCreateDatabase() {
 }
 
 func (db *DB) getConn(ctx context.Context) (*chpool.Conn, error) {
-	cn, err := db.pool.Get(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := db.initConn(ctx, cn); err != nil {
-		db.pool.Remove(cn, err)
-		if err := internal.Unwrap(err); err != nil {
+	for {
+		cn, err := db.pool.Get(ctx)
+		if err != nil {
 			return nil, err
 		}
-		return nil, err
-	}
 
-	return cn, nil
+		if err := db.initConn(ctx, cn); err != nil {
+			db.pool.Remove(cn, err)
+			if err := internal.Unwrap(err); err != nil {
+				return nil, err
+			}
+			return nil, err
+		}
+
+		if db.idleTooLong(cn) {
+			if err := db.pingConn(ctx, cn); err != nil {
+				// The pool dials a fresh conn once its idle ones run out,
+				// and a fresh conn is never pinged, so this ends.
+				db.pool.Remove(cn, err)
+				continue
+			}
+		}
+
+		return cn, nil
+	}
+}
+
+func (db *DB) idleTooLong(cn *chpool.Conn) bool {
+	return db.conf.IdlePingAfter > 0 && cn.IdleAtCheckout() >= db.conf.IdlePingAfter
+}
+
+func (db *DB) pingConn(ctx context.Context, cn *chpool.Conn) error {
+	if err := cn.WithWriter(ctx, db.conf.IdlePingTimeout, func(wr *chproto.Writer) {
+		writePing(wr)
+	}); err != nil {
+		return err
+	}
+	return cn.WithReader(ctx, db.conf.IdlePingTimeout, func(rd *chproto.Reader) error {
+		return readPong(rd)
+	})
 }
 
 func (db *DB) initConn(ctx context.Context, cn *chpool.Conn) error {
@@ -603,6 +629,10 @@ func (r *Row) Scan(dest ...any) error {
 	defer r.rows.Close()
 	if r.rows.Next() {
 		return r.rows.Scan(dest...)
+	}
+	// A read that failed ends the rows too; it is not an empty result.
+	if err := r.rows.Err(); err != nil {
+		return err
 	}
 	return sql.ErrNoRows
 }
