@@ -41,6 +41,9 @@ type Config struct {
 	MaxRetries      int
 	MinRetryBackoff time.Duration
 	MaxRetryBackoff time.Duration
+
+	IdlePingAfter   time.Duration
+	IdlePingTimeout time.Duration
 }
 
 func (conf *Config) clone() *Config {
@@ -242,6 +245,24 @@ func WithConnMaxLifetime(d time.Duration) Option {
 func WithConnMaxIdleTime(d time.Duration) Option {
 	return func(db *DB) {
 		db.conf.ConnMaxIdleTime = d
+	}
+}
+
+// WithIdlePing pings a pooled connection that sat idle for at least after
+// before handing it out, and drops it for a fresh one when no pong arrives
+// within timeout.
+//
+// A connection a load balancer or NAT silently forgot accepts the query's
+// bytes and then never answers, so the first read hangs until ReadTimeout and
+// the query is not retried. A connection the server reset fails the query
+// outright. A ping answers at once from any live server, unlike a query,
+// whose first packet waits on parsing and planning.
+//
+// If after <= 0, idle connections are not pinged.
+func WithIdlePing(after, timeout time.Duration) Option {
+	return func(db *DB) {
+		db.conf.IdlePingAfter = after
+		db.conf.IdlePingTimeout = timeout
 	}
 }
 

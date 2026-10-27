@@ -23,6 +23,10 @@ type Conn struct {
 	createdAt time.Time
 	usedAt    int64  // atomic
 	closed    uint32 // atomic
+
+	// idleAtCheckout is how long the conn sat idle in the pool before the
+	// pool last handed it out.
+	idleAtCheckout time.Duration
 }
 
 func NewConn(netConn net.Conn) *Conn {
@@ -39,6 +43,12 @@ func NewConn(netConn net.Conn) *Conn {
 func (cn *Conn) UsedAt() time.Time {
 	unix := atomic.LoadInt64(&cn.usedAt)
 	return time.Unix(unix, 0)
+}
+
+// IdleAtCheckout reports how long the conn sat idle in the pool before the
+// pool last handed it out; zero for a freshly dialed conn.
+func (cn *Conn) IdleAtCheckout() time.Duration {
+	return cn.idleAtCheckout
 }
 
 func (cn *Conn) SetUsedAt(tm time.Time) {

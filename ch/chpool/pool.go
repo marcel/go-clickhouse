@@ -399,6 +399,7 @@ func (p *ConnPool) isHealthyConn(cn *Conn) bool {
 		return false
 	}
 
+	cn.idleAtCheckout = now.Sub(cn.UsedAt())
 	cn.SetUsedAt(now)
 	return true
 }
