@@ -165,13 +165,16 @@ func (c *ArrayLCStringColumn) ReadFrom(rd *chproto.Reader, numRow int) error {
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.lc.Column = nil
 	if err := c.lc.readData(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.lc.Column[prev:offset]
+		c.Column[i] = c.lc.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -185,10 +188,14 @@ func (c *ArrayLCStringColumn) WriteTo(wr *chproto.Writer) error {
 }
 
 func (c *ArrayLCStringColumn) WriteData(wr *chproto.Writer) error {
+	// A block carries one dictionary for all of the column's elements, as
+	// ReadFrom expects, not one per row.
+	var elems []string
 	for _, ss := range c.Column {
-		c.lc.Column = ss
-		c.lc.writeData(wr)
+		elems = append(elems, ss...)
 	}
+	c.lc.Column = elems
+	c.lc.writeData(wr)
 	return nil
 }
 

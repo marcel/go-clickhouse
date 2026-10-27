@@ -63,13 +63,16 @@ func (c *ArrayInt8Column) ReadFrom(rd *chproto.Reader, numRow int) error {
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -148,13 +151,16 @@ func (c *ArrayArrayInt8Column) ReadFrom(rd *chproto.Reader, numRow int) error {
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -259,13 +265,16 @@ func (c *ArrayUInt8Column) ReadFrom(rd *chproto.Reader, numRow int) error {
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -344,13 +353,16 @@ func (c *ArrayArrayUInt8Column) ReadFrom(rd *chproto.Reader, numRow int) error {
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -455,13 +467,16 @@ func (c *ArrayInt16Column) ReadFrom(rd *chproto.Reader, numRow int) error {
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -540,13 +555,16 @@ func (c *ArrayArrayInt16Column) ReadFrom(rd *chproto.Reader, numRow int) error {
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -651,13 +669,16 @@ func (c *ArrayUInt16Column) ReadFrom(rd *chproto.Reader, numRow int) error {
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -736,13 +757,16 @@ func (c *ArrayArrayUInt16Column) ReadFrom(rd *chproto.Reader, numRow int) error 
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -847,13 +871,16 @@ func (c *ArrayInt32Column) ReadFrom(rd *chproto.Reader, numRow int) error {
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -932,13 +959,16 @@ func (c *ArrayArrayInt32Column) ReadFrom(rd *chproto.Reader, numRow int) error {
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -1043,13 +1073,16 @@ func (c *ArrayUInt32Column) ReadFrom(rd *chproto.Reader, numRow int) error {
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -1128,13 +1161,16 @@ func (c *ArrayArrayUInt32Column) ReadFrom(rd *chproto.Reader, numRow int) error 
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -1239,13 +1275,16 @@ func (c *ArrayInt64Column) ReadFrom(rd *chproto.Reader, numRow int) error {
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -1324,13 +1363,16 @@ func (c *ArrayArrayInt64Column) ReadFrom(rd *chproto.Reader, numRow int) error {
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -1435,13 +1477,16 @@ func (c *ArrayUInt64Column) ReadFrom(rd *chproto.Reader, numRow int) error {
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -1520,13 +1565,16 @@ func (c *ArrayArrayUInt64Column) ReadFrom(rd *chproto.Reader, numRow int) error 
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -1631,13 +1679,16 @@ func (c *ArrayFloat32Column) ReadFrom(rd *chproto.Reader, numRow int) error {
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -1716,13 +1767,16 @@ func (c *ArrayArrayFloat32Column) ReadFrom(rd *chproto.Reader, numRow int) error
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -1827,13 +1881,16 @@ func (c *ArrayFloat64Column) ReadFrom(rd *chproto.Reader, numRow int) error {
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -1912,13 +1969,16 @@ func (c *ArrayArrayFloat64Column) ReadFrom(rd *chproto.Reader, numRow int) error
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -2044,13 +2104,16 @@ func (c *ArrayBoolColumn) ReadFrom(rd *chproto.Reader, numRow int) error {
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -2129,13 +2192,16 @@ func (c *ArrayArrayBoolColumn) ReadFrom(rd *chproto.Reader, numRow int) error {
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -2261,13 +2327,16 @@ func (c *ArrayStringColumn) ReadFrom(rd *chproto.Reader, numRow int) error {
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -2346,13 +2415,16 @@ func (c *ArrayArrayStringColumn) ReadFrom(rd *chproto.Reader, numRow int) error 
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -2478,13 +2550,16 @@ func (c *ArrayBytesColumn) ReadFrom(rd *chproto.Reader, numRow int) error {
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -2563,13 +2638,16 @@ func (c *ArrayArrayBytesColumn) ReadFrom(rd *chproto.Reader, numRow int) error {
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -2654,13 +2732,16 @@ func (c *ArrayEnumColumn) ReadFrom(rd *chproto.Reader, numRow int) error {
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -2739,13 +2820,16 @@ func (c *ArrayArrayEnumColumn) ReadFrom(rd *chproto.Reader, numRow int) error {
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -2867,13 +2951,16 @@ func (c *ArrayDateTimeColumn) ReadFrom(rd *chproto.Reader, numRow int) error {
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 
@@ -2952,13 +3039,16 @@ func (c *ArrayArrayDateTimeColumn) ReadFrom(rd *chproto.Reader, numRow int) erro
 		return err
 	}
 
+	// Each block gets its own element buffer: a later block reuses this column,
+	// and the rows already scanned keep slices of the buffer.
+	c.elem.Column = nil
 	if err := c.elem.ReadFrom(rd, offsets[len(offsets)-1]); err != nil {
 		return err
 	}
 
 	var prev int
 	for i, offset := range offsets {
-		c.Column[i] = c.elem.Column[prev:offset]
+		c.Column[i] = c.elem.Column[prev:offset:offset]
 		prev = offset
 	}
 

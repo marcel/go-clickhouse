@@ -215,6 +215,54 @@ func TestScanArray(t *testing.T) {
 	})
 }
 
+// A result split across blocks decodes each block into the same column, so a
+// row's array must not share memory with a later block.
+func TestScanArrayAcrossBlocks(t *testing.T) {
+	ctx := context.Background()
+
+	db := chDB()
+	defer db.Close()
+
+	const query = `SELECT number AS id, [number, number * 2] AS pair, [toString(number)] AS strs
+FROM numbers(100000) SETTINGS max_block_size = 1000`
+
+	type row struct {
+		ID   uint64   `ch:"id"`
+		Pair []uint64 `ch:"pair"`
+		Strs []string `ch:"strs"`
+	}
+	check := func(t *testing.T, rows []row) {
+		require.Len(t, rows, 100000)
+		for i, r := range rows {
+			n := uint64(i)
+			require.Equal(t, n, r.ID)
+			require.Equal(t, []uint64{n, n * 2}, r.Pair, "row %d", i)
+			require.Equal(t, []string{fmt.Sprint(n)}, r.Strs, "row %d", i)
+		}
+	}
+
+	t.Run("slice model", func(t *testing.T) {
+		var rows []row
+		require.NoError(t, db.NewRaw(query).Scan(ctx, &rows))
+		check(t, rows)
+	})
+
+	t.Run("Rows", func(t *testing.T) {
+		rs, err := db.QueryContext(ctx, query)
+		require.NoError(t, err)
+		defer rs.Close()
+
+		var rows []row
+		for rs.Next() {
+			var r row
+			require.NoError(t, rs.Scan(&r.ID, &r.Pair, &r.Strs))
+			rows = append(rows, r)
+		}
+		require.NoError(t, rs.Err())
+		check(t, rows)
+	})
+}
+
 func TestScanEmptyResult(t *testing.T) {
 	ctx := context.Background()
 
